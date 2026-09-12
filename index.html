@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Methodist AHU Inspection Repository</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#005941">
+<style>
+  :root{
+    --forest:#005941;
+    --teal:#009470;
+    --teal-light:#e5f5f1;
+    --ink:#1c2624;
+    --ink-soft:#5a6b67;
+    --paper:#ffffff;
+    --bg:#f2f5f4;
+    --line:#d9e2e0;
+    --amber:#b9770e;
+    --amber-bg:#fdf2e0;
+    --red:#a6362c;
+    --red-bg:#faeceb;
+    --green:#1c7a4e;
+    --green-bg:#e9f6ef;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  header{background:var(--forest);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+  header .brand{display:flex;align-items:center;gap:10px;}
+  header .brand .mark{width:34px;height:34px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;}
+  header .brand h1{font-size:15px;margin:0;font-weight:600;line-height:1.25;}
+  header .brand .sub{font-size:11px;opacity:.8;font-weight:400;}
+  header .who{font-size:12px;text-align:right;opacity:.9;}
+  header .who button{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:11px;padding:5px 10px;border-radius:6px;margin-left:8px;cursor:pointer;}
+
+  nav{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:60px;z-index:40;}
+  nav button{border:none;background:transparent;padding:12px 16px;font-size:13px;color:var(--ink-soft);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;font-weight:500;}
+  nav button.active{color:var(--forest);border-bottom-color:var(--teal);font-weight:700;}
+  nav button:hover{color:var(--forest);}
+
+  main{max-width:960px;margin:0 auto;padding:18px 14px 60px;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .card h2{font-size:15px;margin:0 0 4px;color:var(--forest);}
+  .card .hint{font-size:12px;color:var(--ink-soft);margin:0 0 14px;}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;margin-top:12px;}
+  label:first-child{margin-top:0;}
+  input[type=text],input[type=date],input[type=number],select,textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:-1px;border-color:var(--teal);}
+  textarea{min-height:70px;resize:vertical;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > *{flex:1;min-width:150px;}
+  .checkrow{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;}
+  .checkrow label{display:flex;align-items:center;gap:6px;font-size:13px;margin:0;font-weight:500;color:var(--ink);}
+  .checkrow input[type=checkbox]{width:16px;height:16px;}
+
+  .checklist-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .checklist-item:last-child{border-bottom:none;}
+  .checklist-item .txt{flex:1;font-size:13px;line-height:1.4;}
+  .pf-toggle{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex-shrink:0;}
+  .pf-toggle button{border:none;background:#fff;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-soft);}
+  .pf-toggle button.pass.on{background:var(--green-bg);color:var(--green);}
+  .pf-toggle button.fail.on{background:var(--red-bg);color:var(--red);}
+  .pf-toggle button.na.on{background:#eee;color:#777;}
+
+  .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--teal);margin:20px 0 6px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  table th,table td{border:1px solid var(--line);padding:7px 8px;text-align:left;}
+  table th{background:var(--teal-light);color:var(--forest);font-size:11px;text-transform:uppercase;}
+
+  .btn{display:inline-block;background:var(--teal);color:#fff;border:none;padding:10px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;}
+  .btn:hover{background:#007a5c;}
+  .btn.secondary{background:#fff;color:var(--forest);border:1px solid var(--forest);}
+  .btn.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn.small{padding:6px 12px;font-size:12px;}
+  .btn.danger{background:var(--red);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+  .badge.pass{background:var(--green-bg);color:var(--green);}
+  .badge.fail{background:var(--red-bg);color:var(--red);}
+  .badge.overdue{background:var(--red-bg);color:var(--red);}
+  .badge.due-soon{background:var(--amber-bg);color:var(--amber);}
+  .badge.ok{background:var(--green-bg);color:var(--green);}
+  .badge.scan{background:#eee;color:#666;}
+  .badge.digital{background:var(--teal-light);color:var(--forest);}
+
+  .rep-list{display:flex;flex-direction:column;gap:8px;}
+  .rep-row{border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;background:#fff;}
+  .rep-row:hover{border-color:var(--teal);}
+  .rep-row .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .rep-row .top strong{font-size:13.5px;}
+  .rep-row .meta{font-size:11.5px;color:var(--ink-soft);margin-top:3px;}
+
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .filterbar select,.filterbar input{width:auto;flex:1;min-width:120px;}
+
+  .pin-gate{max-width:360px;margin:80px auto;text-align:center;}
+  .pin-gate .mark{width:56px;height:56px;border-radius:14px;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;margin:0 auto 14px;}
+  .pin-gate input{text-align:center;font-size:20px;letter-spacing:6px;}
+  .pin-gate .role-pick{display:flex;gap:8px;margin-top:14px;}
+  .pin-gate .role-pick button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;font-weight:600;}
+  .pin-gate .role-pick button.sel{border-color:var(--teal);background:var(--teal-light);color:var(--forest);}
+  .err{color:var(--red);font-size:12px;margin-top:8px;min-height:16px;}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(10,20,18,.5);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;z-index:100;}
+  .modal{background:#fff;border-radius:12px;max-width:640px;width:100%;padding:20px;margin-top:30px;}
+  .modal .close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);}
+
+  .banner{background:var(--amber-bg);border:1px solid #f0d29a;color:#7a5410;font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:14px;}
+  .banner.cloud{background:#eef2ff;border-color:#c7d2fe;color:#3730a3;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--forest);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px;}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center;}
+  .stat .n{font-size:22px;font-weight:800;color:var(--forest);}
+  .stat .l{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+
+  .file-drop{border:2px dashed var(--line);border-radius:8px;padding:18px;text-align:center;cursor:pointer;font-size:13px;color:var(--ink-soft);}
+  .file-drop:hover{border-color:var(--teal);color:var(--forest);}
+  .file-preview{margin-top:10px;font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;}
+  .file-preview img{max-width:70px;max-height:70px;border-radius:4px;border:1px solid var(--line);}
+
+  @media print{
+    header,nav,.filterbar,.btn,.no-print{display:none !important;}
+    body{background:#fff;}
+    main{max-width:100%;padding:0;}
+  }
+</style>
+</head>
+<body>
+
+<div id="gate"></div>
+<div id="app" style="display:none">
+  <header>
+    <div class="brand">
+      <div class="mark">M</div>
+      <div>
+        <h1>Methodist AHU Inspection Repository</h1>
+        <div class="sub">Hunton Services &middot; Compliance Records</div>
+      </div>
+    </div>
+    <div class="who" id="whoBox"></div>
+  </header>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div id="toastHost"></div>
+<div id="modalHost"></div>
+
+<script>
+/* =========================================================================
+   METHODIST AHU INSPECTION REPOSITORY
+   Single-file PWA. Storage backend is pluggable:
+   - DEMO MODE (default): browser localStorage only, per-device.
+   - CLOUD MODE: fill in FIREBASE_CONFIG below with a real Firebase project
+     (Firestore + Storage) and set CLOUD_ENABLED = true. This gives every
+     device/campus/auditor the same shared, synced repository — required
+     for real use. See the "Cloud setup" note in the Settings tab.
+   ========================================================================= */
+
+  const CLOUD_ENABLED = false; // flip to true once FIREBASE_CONFIG below is filled in
+  const FIREBASE_CONFIG = {
+    apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: ""
+  };
+
+  // ---- Access PINs (change these before real deployment) ----
+  const PINS = {
+    admin: "1958",   // Hunton techs / leads — full create/edit
+    viewer: "0000"   // Methodist staff, insurance, auditors — read-only
+  };
+
+  const LS_RECORDS = "methodist_ahu_records_v1";
+  const LS_TAGS = "methodist_ahu_tags_v1";
+  const LS_ROLE = "methodist_role_v1";
+
+  // ---- Checklist content (transcribed from the Jan 2020 paper forms) ----
+  const QS_CHECKLIST = [
+    "Coil is clean. No fin damage.",
+    "Vibration analysis was performed and bearings are acceptable.",
+    "Bearing and motor are firmly mounted.",
+    "Motor operating voltage and amperage is per nameplate.",
+    "All electrical connections are tight.",
+    "No unusual noise or vibrations were noted.",
+    "Belt was inspected for excessive wear. Adjusted belt tension.",
+    "Filters inspected. No issue with gaps or filler plate.",
+    "PM sheet filed in shop"
+  ];
+  const ANNUAL_CHECKLIST = [
+    "Coil is clean. No fin damage.",
+    "Condensate drain pan is clean and drains well. Drain line run has no low point and p-trap is in place.",
+    "Drive sheave(s) are not worn and set screw is tight.",
+    "Belt was inspected for excessive wear. Adjusted belt tension if needed.",
+    "Fan and motor bearings were inspected. Lubricated if needed.",
+    "Bearing and motor are firmly mounted.",
+    "Motor operating voltage and amperage is per nameplate.",
+    "Control and power box wiring have secure connections and insulation integrity.",
+    "Fan wheel was rotated and clear of obstructions or debris",
+    "No insulation tears on unit. Gasketing for cabinet, access doors and dampers is in good condition.",
+    "No leaks or cracks noted on flex connections.",
+    "No unusual noise or vibration noted. Spring isolators are in place and are not compressed.",
+    "AHU damper linkages and actuators are operational; set-screws and blade adjustment checked; linkages lubricated if needed.",
+    "AHU damper operators were cleaned and functioning properly",
+    "Vibration analysis performed and results acceptable",
+    "No rust or other corrosion noted on unit.",
+    "Grease line connections and zerk fittings are in good condition.",
+    "PM sheet filed in shop"
+  ];
+  const CAMPUS_META = {
+    west: {
+      label: "Methodist West",
+      filterScope: [
+        "Change disposable pre-filters or clean permanent filters 2 times a year on base building units",
+        "Change pre-filters on all ERU 4 times per year"
+      ],
+      coilCleaning: [
+        "ERU Units ONLY: clean coils, drain pan and drain with non-acid based detergent 1 time per year.",
+        "Base building AHUs: clean coils, drain pan and drain with non-acid based detergent 1 time per year."
+      ],
+      beltChange: "Provide labor to replace belts 1 time per year.",
+      uvLamps: "Provide material and labor to replace UV lamps 1 time per year."
+    },
+    cc: {
+      label: "Methodist Continuing Care",
+      filterScope: [
+        "Change pre-filters 4 times a year on base building units",
+        "Install final filters 1 time a year",
+        "Change HEPA filters 1 time in a 3 year period"
+      ],
+      coilCleaning: [
+        "Clean coils, drain pan and drain with non-acid based detergent 1 time per year."
+      ],
+      beltChange: "Provide material and labor to replace belts 1 time per year.",
+      uvLamps: null
+    }
+  };
+  const TX_LICENSE = "Tx Air Conditioning License 009290C";
+  const DUE_MONTHS = { quarterly: 3, semiannual: 6, annual: 12 };
+  const TYPE_LABEL = { quarterly: "Quarterly", semiannual: "Semi-Annual", annual: "Annual" };
+
+  // ---------------- Storage layer ----------------
+  const Store = {
+    async list(){
+      return JSON.parse(localStorage.getItem(LS_RECORDS) || "[]");
+    },
+    async save(rec){
+      const all = await this.list();
+      if(rec.id){
+        const i = all.findIndex(r=>r.id===rec.id);
+        if(i>-1) all[i]=rec; else all.push(rec);
+      } else {
+        rec.id = "r_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+        rec.createdAt = new Date().toISOString();
+        all.push(rec);
+      }
+      this._write(all);
+      return rec;
+    },
+    async remove(id){
+      const all = (await this.list()).filter(r=>r.id!==id);
+      this._write(all);
+    },
+    _write(all){
+      try{ localStorage.setItem(LS_RECORDS, JSON.stringify(all)); }
+      catch(e){ toast("Storage full — export/backup data, or set up cloud sync (see Settings)."); }
+    },
+    async tags(){
+      return JSON.parse(localStorage.getItem(LS_TAGS) || "[]");
+    },
+    async addTag(t){
+      const tags = await this.tags();
+      if(!tags.includes(t)){ tags.push(t); tags.sort(); localStorage.setItem(LS_TAGS, JSON.stringify(tags)); }
+    }
+  };
+
+  // ---------------- App state ----------------
+  let ROLE = localStorage.getItem(LS_ROLE) || null;
+  let TAB = "new";
+  let RECORDS = [];
+  let TAGS = [];
+
+  function toast(msg){
+    const host = document.getElementById("toastHost");
+    const el = document.createElement("div");
+    el.className="toast"; el.textContent=msg;
+    host.appendChild(el);
+    setTimeout(()=>el.remove(), 2600);
+  }
+
+  function fmtDate(d){
+    if(!d) return "—";
+    const dt = new Date(d+"T00:00:00");
+    if(isNaN(dt)) return d;
+    return dt.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+  }
+  function addMonths(dateStr, n){
+    const d = new Date(dateStr+"T00:00:00");
+    d.setMonth(d.getMonth()+n);
+    return d.toISOString().slice(0,10);
+  }
+  function daysBetween(a,b){
+    return Math.round((new Date(b)-new Date(a))/86400000);
+  }
+
+  // ---------------- Gate (PIN login) ----------------
+  function renderGate(){
+    const gate = document.getElementById("gate");
+    document.getElementById("app").style.display="none";
+    let picked = "admin";
+    gate.innerHTML = `
+      <div class="pin-gate">
+        <div class="mark">M</div>
+        <h2 style="margin:0 0 4px;font-size:17px;">Methodist AHU Inspection Repository</h2>
+        <p style="font-size:12px;color:var(--ink-soft);margin-top:0;">Hunton Services — Compliance Records</p>
+        <div class="role-pick">
+          <button id="rAdmin" class="sel">Tech / Admin</button>
+          <button id="rViewer">Viewer (read-only)</button>
+        </div>
+        <input type="text" inputmode="numeric" maxlength="6" id="pinInput" placeholder="PIN" style="margin-top:14px;">
+        <button class="btn" style="width:100%;margin-top:12px;" id="pinGo">Enter</button>
+        <div class="err" id="pinErr"></div>
+        <p style="font-size:11px;color:var(--ink-soft);margin-top:18px;">Viewer access is for Methodist facilities staff, insurance, and auditors — read-only, no edits.</p>
+      </div>`;
+    document.getElementById("rAdmin").onclick=()=>{picked="admin";document.getElementById("rAdmin").classList.add("sel");document.getElementById("rViewer").classList.remove("sel");};
+    document.getElementById("rViewer").onclick=()=>{picked="viewer";document.getElementById("rViewer").classList.add("sel");document.getElementById("rAdmin").classList.remove("sel");};
+    const go = ()=>{
+      const val = document.getElementById("pinInput").value.trim();
+      if(val === PINS[picked]){
+        ROLE = picked;
+        localStorage.setItem(LS_ROLE, ROLE);
+        boot();
+      } else {
+        document.getElementById("pinErr").textContent = "Incorrect PIN.";
+      }
+    };
+    document.getElementById("pinGo").onclick=go;
+    document.getElementById("pinInput").addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+  }
+
+  // ---------------- Nav / shell ----------------
+  const TABS_ADMIN = [
+    ["new","New Inspection"],["import","Import Backlog"],["repo","Repository"],
+    ["compliance","Compliance Report"],["settings","Settings"]
+  ];
+  const TABS_VIEWER = [
+    ["repo","Repository"],["compliance","Compliance Report"]
+  ];
+
+  function renderShell(){
+    document.getElementById("gate").innerHTML="";
+    document.getElementById("app").style.display="block";
+    document.getElementById("whoBox").innerHTML =
+      `${ROLE==="admin"?"Tech / Admin":"Viewer (read-only)"}<button id="logoutBtn">Switch</button>`;
+    document.getElementById("logoutBtn").onclick=()=>{
+      localStorage.removeItem(LS_ROLE); ROLE=null; renderGate();
+    };
+    const navEl = document.getElementById("nav");
+    const tabs = ROLE==="admin" ? TABS_ADMIN : TABS_VIEWER;
+    if(!tabs.find(t=>t[0]===TAB)) TAB = tabs[0][0];
+    navEl.innerHTML = tabs.map(([id,label])=>
+      `<button data-tab="${id}" class="${TAB===id?'active':''}">${label}</button>`).join("");
+    navEl.querySelectorAll("button").forEach(b=>{
+      b.onclick=()=>{ TAB=b.dataset.tab; renderShell(); };
+    });
+    renderMain();
+  }
+
+  async function boot(){
+    RECORDS = await Store.list();
+    TAGS = await Store.tags();
+    renderShell();
+  }
+
+  function renderMain(){
+    const main = document.getElementById("main");
+    main.innerHTML = "";
+    if(TAB==="new") return renderNewInspection(main);
+    if(TAB==="import") return renderImportBacklog(main);
+    if(TAB==="repo") return renderRepository(main);
+    if(TAB==="compliance") return renderCompliance(main);
+    if(TAB==="settings") return renderSettings(main);
+  }
+
+  // ---------------- New Inspection ----------------
+  function renderNewInspection(main){
+    const banner = CLOUD_ENABLED ? "" : `<div class="banner cloud">Demo mode: records are saved to this device/browser only. See <b>Settings → Cloud setup</b> to turn on shared syncing across techs, Methodist staff, and auditors.</div>`;
+    main.innerHTML = banner + `
+      <div class="card">
+        <h2>New Digital Inspection</h2>
+        <p class="hint">Mirrors the paper AHU inspection sheet. Fields adapt to the campus and visit type selected.</p>
+        <div class="row">
+          <div>
+            <label>Campus</label>
+            <select id="f_campus">
+              <option value="west">Methodist West</option>
+              <option value="cc">Methodist Continuing Care</option>
+            </select>
+          </div>
+          <div>
+            <label>AHU Tag</label>
+            <input type="text" id="f_tag" list="tagList" placeholder="e.g. AHU-3">
+            <datalist id="tagList"></datalist>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="f_date" value="${new Date().toISOString().slice(0,10)}">
+          </div>
+        </div>
+        <label>Visit type(s) performed</label>
+        <div class="checkrow">
+          <label><input type="checkbox" id="t_q"> Quarterly</label>
+          <label><input type="checkbox" id="t_s"> Semi-Annual</label>
+          <label><input type="checkbox" id="t_a"> Annual</label>
+        </div>
+        <div class="row">
+          <div>
+            <label>Technician (print name)</label>
+            <input type="text" id="f_tech">
+          </div>
+          <div>
+            <label>Technician signature (type full name to sign)</label>
+            <input type="text" id="f_sig" placeholder="Type name as signature">
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--ink-soft);margin-top:10px;">${TX_LICENSE}</p>
+      </div>
+      <div id="dynamicSections"></div>
+      <div class="card">
+        <label>Engineer on duty initials</label>
+        <input type="text" id="f_eng" style="max-width:160px;">
+        <label>Deficiencies / Notes</label>
+        <textarea id="f_notes" placeholder="Note any deficiencies or exceptions found during this visit"></textarea>
+      </div>
+      <button class="btn" id="saveInspBtn">Save Inspection</button>
+      <span id="saveMsg" style="margin-left:10px;font-size:12px;color:var(--ink-soft);"></span>
+    `;
+    const tagList = document.getElementById("tagList");
+    tagList.innerHTML = TAGS.map(t=>`<option value="${t}">`).join("");
+
+    const campusSel = document.getElementById("f_campus");
+    const rebuildDynamic = ()=>renderDynamicSections();
+    campusSel.onchange = rebuildDynamic;
+    ["t_q","t_s","t_a"].forEach(id=>document.getElementById(id).onchange=rebuildDynamic);
+    rebuildDynamic();
+
+    function renderDynamicSections(){
+      const campus = campusSel.value;
+      const meta = CAMPUS_META[campus];
+      const showAnnual = document.getElementById("t_a").checked;
+      const showQS = document.getElementById("t_q").checked || document.getElementById("t_s").checked;
+      const host = document.getElementById("dynamicSections");
+      let html = "";
+
+      if(showAnnual){
+        html += `<div class="card"><h2>Annual Scope</h2><p class="hint">Note deficiencies and exceptions in the notes field below.</p>
+          <div id="annualChecklist">${checklistHtml(ANNUAL_CHECKLIST,"ann")}</div></div>`;
+      }
+      if(showQS){
+        html += `<div class="card"><h2>Quarterly &amp; Semi-Annual Scope</h2>
+          <div id="qsChecklist">${checklistHtml(QS_CHECKLIST,"qs")}</div></div>`;
+      }
+      if(showAnnual){
+        html += `<div class="card"><h2>Filter, Coil, Belt${meta.uvLamps?", UV Lamp":""} Servicing</h2>
+          <div class="section-title">Filter scope</div>
+          <ul style="font-size:13px;padding-left:18px;margin:4px 0;">${meta.filterScope.map(s=>`<li>${s}</li>`).join("")}</ul>
+          <label>Filter change date</label><input type="date" id="f_filterDate">
+          <div class="section-title">Coil cleaning</div>
+          <ul style="font-size:13px;padding-left:18px;margin:4px 0;">${meta.coilCleaning.map(s=>`<li>${s}</li>`).join("")}</ul>
+          <label>Coil clean date</label><input type="date" id="f_coilDate">
+          <div class="section-title">Belt change</div>
+          <p style="font-size:13px;margin:4px 0;">${meta.beltChange}</p>
+          <label>Belt change date</label><input type="date" id="f_beltDate">
+          ${meta.uvLamps ? `<div class="section-title">UV lamps</div><p style="font-size:13px;margin:4px 0;">${meta.uvLamps}</p><label>UV lamp change date</label><input type="date" id="f_uvDate">` : ""}
+        </div>
+        <div class="card">
+          <h2>Filter Pressure Drop</h2>
+          <table><thead><tr><th></th><th>Entering Pressure</th><th>Leaving Pressure</th><th>Differential Pressure</th></tr></thead>
+          <tbody>
+          <tr><td>CW Coil</td><td><input type="text" id="p_cw_in"></td><td><input type="text" id="p_cw_out"></td><td><input type="text" id="p_cw_diff"></td></tr>
+          <tr><td>HW Coil</td><td><input type="text" id="p_hw_in"></td><td><input type="text" id="p_hw_out"></td><td><input type="text" id="p_hw_diff"></td></tr>
+          </tbody></table>
+          <p style="font-size:11px;color:var(--ink-soft);margin-top:10px;">Bearing housing temp range must be 160°F or below. Temperatures above 160°F must be immediately reported to the engineering department. Above 180°F will result in catastrophic failure.</p>
+          <div class="row">
+            <div><label>Front fan bearing temp (°F)</label><input type="number" id="b_front"></div>
+            <div><label>Rear fan bearing temp (°F)</label><input type="number" id="b_rear"></div>
+          </div>
+        </div>`;
+      }
+      host.innerHTML = html;
+    }
+
+    function checklistHtml(items, prefix){
+      return items.map((txt,i)=>`
+        <div class="checklist-item">
+          <div class="txt">${txt}</div>
+          <div class="pf-toggle" data-key="${prefix}_${i}">
+            <button type="button" class="pass" data-v="pass">Pass</button>
+            <button type="button" class="fail" data-v="fail">Fail</button>
+            <button type="button" class="na" data-v="na">N/A</button>
+          </div>
+        </div>`).join("");
+    }
+    document.getElementById("main").addEventListener("click",(e)=>{
+      const btn = e.target.closest(".pf-toggle button");
+      if(!btn) return;
+      const toggle = btn.parentElement;
+      toggle.querySelectorAll("button").forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");
+      toggle.dataset.val = btn.dataset.v;
+    });
+
+    document.getElementById("saveInspBtn").onclick = async ()=>{
+      const campus = campusSel.value;
+      const tag = document.getElementById("f_tag").value.trim();
+      const date = document.getElementById("f_date").value;
+      const types = [];
+      if(document.getElementById("t_q").checked) types.push("quarterly");
+      if(document.getElementById("t_s").checked) types.push("semiannual");
+      if(document.getElementById("t_a").checked) types.push("annual");
+      const tech = document.getElementById("f_tech").value.trim();
+      const sig = document.getElementById("f_sig").value.trim();
+
+      if(!tag || !date || types.length===0 || !tech || !sig){
+        document.getElementById("saveMsg").textContent = "Please fill AHU tag, date, at least one visit type, technician name, and signature.";
+        document.getElementById("saveMsg").style.color = "var(--red)";
+        return;
+      }
+
+      const collect = (prefix, items)=>{
+        const els = document.querySelectorAll(`.pf-toggle[data-key^="${prefix}_"]`);
+        return items.map((txt,i)=>{
+          const el = document.querySelector(`.pf-toggle[data-key="${prefix}_${i}"]`);
+          return {item:txt, result: el ? (el.dataset.val||null) : null};
+        });
+      };
+
+      const rec = {
+        campus, ahuTag: tag, date, types, technician: tech, signature: sig,
+        source: "digital",
+        annualChecklist: types.includes("annual") ? collect("ann",ANNUAL_CHECKLIST) : null,
+        qsChecklist: (types.includes("quarterly")||types.includes("semiannual")) ? collect("qs",QS_CHECKLIST) : null,
+        service: types.includes("annual") ? {
+          filterDate: val("f_filterDate"), coilDate: val("f_coilDate"),
+          beltDate: val("f_beltDate"), uvDate: val("f_uvDate")
+        } : null,
+        pressure: types.includes("annual") ? {
+          cw: {in: val("p_cw_in"), out: val("p_cw_out"), diff: val("p_cw_diff")},
+          hw: {in: val("p_hw_in"), out: val("p_hw_out"), diff: val("p_hw_diff")}
+        } : null,
+        bearing: types.includes("annual") ? {front: val("b_front"), rear: val("b_rear")} : null,
+        engineerInitials: document.getElementById("f_eng").value.trim(),
+        notes: document.getElementById("f_notes").value.trim(),
+        createdBy: tech
+      };
+      function val(id){ const el=document.getElementById(id); return el ? el.value : ""; }
+
+      const hasFail = [rec.annualChecklist, rec.qsChecklist].filter(Boolean).some(list=>list.some(i=>i.result==="fail"));
+      rec.overallResult = hasFail ? "fail" : "pass";
+
+      await Store.save(rec);
+      await Store.addTag(tag);
+      RECORDS = await Store.list();
+      TAGS = await Store.tags();
+      toast("Inspection saved to repository.");
+      TAB = "repo";
+      renderShell();
+    };
+  }
+
+  // ---------------- Import Backlog ----------------
+  function renderImportBacklog(main){
+    main.innerHTML = `
+      <div class="card">
+        <h2>Import Backlog Record</h2>
+        <p class="hint">For inspections already completed on paper. Attach a photo or PDF of the sheet and enter the key details so it's searchable in the repository.</p>
+        <div class="row">
+          <div>
+            <label>Campus</label>
+            <select id="i_campus">
+              <option value="west">Methodist West</option>
+              <option value="cc">Methodist Continuing Care</option>
+            </select>
+          </div>
+          <div>
+            <label>AHU Tag</label>
+            <input type="text" id="i_tag" list="tagList2">
+            <datalist id="tagList2"></datalist>
+          </div>
+          <div>
+            <label>Date of inspection</label>
+            <input type="date" id="i_date">
+          </div>
+        </div>
+        <label>Visit type(s)</label>
+        <div class="checkrow">
+          <label><input type="checkbox" id="i_t_q"> Quarterly</label>
+          <label><input type="checkbox" id="i_t_s"> Semi-Annual</label>
+          <label><input type="checkbox" id="i_t_a"> Annual</label>
+        </div>
+        <div class="row">
+          <div><label>Technician (if legible)</label><input type="text" id="i_tech"></div>
+          <div>
+            <label>Overall result</label>
+            <select id="i_result"><option value="pass">Pass</option><option value="fail">Fail / deficiencies noted</option><option value="unknown">Unknown / not legible</option></select>
+          </div>
+        </div>
+        <label>Scanned sheet (photo or PDF)</label>
+        <div class="file-drop" id="fileDrop">Tap to choose a file, or drag one here</div>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" style="display:none">
+        <div class="file-preview" id="filePreview"></div>
+        <label>Notes</label>
+        <textarea id="i_notes" placeholder="Deficiencies noted, or any context about this backlog record"></textarea>
+        <button class="btn" id="saveImportBtn" style="margin-top:14px;">Save to Repository</button>
+        <span id="importMsg" style="margin-left:10px;font-size:12px;"></span>
+      </div>
+    `;
+    document.getElementById("tagList2").innerHTML = TAGS.map(t=>`<option value="${t}">`).join("");
+    let fileData = null, fileName = null, fileType = null;
+    const drop = document.getElementById("fileDrop");
+    const input = document.getElementById("fileInput");
+    drop.onclick = ()=>input.click();
+    input.onchange = ()=>{
+      const f = input.files[0];
+      if(!f) return;
+      fileName = f.name; fileType = f.type;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        fileData = reader.result;
+        const preview = document.getElementById("filePreview");
+        if(fileType.startsWith("image/")){
+          preview.innerHTML = `<img src="${fileData}"><span>${fileName}</span>`;
+        } else {
+          preview.innerHTML = `<span>📄 ${fileName}</span>`;
+        }
+      };
+      reader.readAsDataURL(f);
+    };
+
+    document.getElementById("saveImportBtn").onclick = async ()=>{
+      const tag = document.getElementById("i_tag").value.trim();
+      const date = document.getElementById("i_date").value;
+      const types = [];
+      if(document.getElementById("i_t_q").checked) types.push("quarterly");
+      if(document.getElementById("i_t_s").checked) types.push("semiannual");
+      if(document.getElementById("i_t_a").checked) types.push("annual");
+      if(!tag || !date || types.length===0){
+        document.getElementById("importMsg").textContent = "Fill AHU tag, date, and at least one visit type.";
+        document.getElementById("importMsg").style.color = "var(--red)";
+        return;
+      }
+      const rec = {
+        campus: document.getElementById("i_campus").value,
+        ahuTag: tag, date, types,
+        technician: document.getElementById("i_tech").value.trim(),
+        overallResult: document.getElementById("i_result").value,
+        notes: document.getElementById("i_notes").value.trim(),
+        source: "scan",
+        scanFileName: fileName,
+        scanFileData: fileData, // stored inline for demo mode; move to Firebase Storage in cloud mode
+        createdBy: "backlog import"
+      };
+      try{
+        await Store.save(rec);
+      } catch(e){
+        toast("Could not store file inline (too large for this browser). Record saved without attachment.");
+        rec.scanFileData = null;
+        await Store.save(rec);
+      }
+      await Store.addTag(tag);
+      RECORDS = await Store.list();
+      TAGS = await Store.tags();
+      toast("Backlog record saved.");
+      TAB = "repo";
+      renderShell();
+    };
+  }
+
+  // ---------------- Repository ----------------
+  function renderRepository(main){
+    main.innerHTML = `
+      <div class="card">
+        <h2>Repository</h2>
+        <p class="hint">Every completed inspection — digital and scanned backlog — searchable in one place.</p>
+        <div class="filterbar">
+          <select id="fl_campus"><option value="">All campuses</option><option value="west">Methodist West</option><option value="cc">Methodist Continuing Care</option></select>
+          <input type="text" id="fl_tag" placeholder="AHU tag...">
+          <select id="fl_type"><option value="">All visit types</option><option value="quarterly">Quarterly</option><option value="semiannual">Semi-Annual</option><option value="annual">Annual</option></select>
+          <select id="fl_result"><option value="">All results</option><option value="pass">Pass</option><option value="fail">Fail</option></select>
+          <input type="date" id="fl_from"><input type="date" id="fl_to">
+        </div>
+        <div class="rep-list" id="repList"></div>
+      </div>
+    `;
+    const draw = ()=>{
+      let list = [...RECORDS];
+      const c = document.getElementById("fl_campus").value;
+      const tag = document.getElementById("fl_tag").value.trim().toLowerCase();
+      const type = document.getElementById("fl_type").value;
+      const result = document.getElementById("fl_result").value;
+      const from = document.getElementById("fl_from").value;
+      const to = document.getElementById("fl_to").value;
+      if(c) list = list.filter(r=>r.campus===c);
+      if(tag) list = list.filter(r=>(r.ahuTag||"").toLowerCase().includes(tag));
+      if(type) list = list.filter(r=>r.types && r.types.includes(type));
+      if(result) list = list.filter(r=>r.overallResult===result);
+      if(from) list = list.filter(r=>r.date>=from);
+      if(to) list = list.filter(r=>r.date<=to);
+      list.sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+      const host = document.getElementById("repList");
+      if(list.length===0){ host.innerHTML = `<p style="font-size:13px;color:var(--ink-soft);">No records match.</p>`; return; }
+      host.innerHTML = list.map(r=>`
+        <div class="rep-row" data-id="${r.id}">
+          <div class="top">
+            <strong>${CAMPUS_META[r.campus].label} — ${r.ahuTag}</strong>
+            <span>
+              <span class="badge ${r.source==='scan'?'scan':'digital'}">${r.source==='scan'?'Scanned':'Digital'}</span>
+              <span class="badge ${r.overallResult==='fail'?'fail':'pass'}">${r.overallResult==='unknown'?'Unknown':(r.overallResult==='fail'?'Fail':'Pass')}</span>
+            </span>
+          </div>
+          <div class="meta">${fmtDate(r.date)} &middot; ${(r.types||[]).map(t=>TYPE_LABEL[t]).join(", ")} &middot; Tech: ${r.technician||"—"}</div>
+        </div>`).join("");
+      host.querySelectorAll(".rep-row").forEach(row=>{
+        row.onclick = ()=>openRecordModal(row.dataset.id);
+      });
+    };
+    ["fl_campus","fl_tag","fl_type","fl_result","fl_from","fl_to"].forEach(id=>{
+      document.getElementById(id).addEventListener("input", draw);
+      document.getElementById(id).addEventListener("change", draw);
+    });
+    draw();
+  }
+
+  function openRecordModal(id){
+    const r = RECORDS.find(x=>x.id===id);
+    if(!r) return;
+    const host = document.getElementById("modalHost");
+    const checklistBlock = (title, list)=> !list ? "" : `
+      <div class="section-title">${title}</div>
+      <table><tbody>${list.map(i=>`<tr><td>${i.item}</td><td style="width:70px;text-align:center;">${i.result?`<span class="badge ${i.result==='fail'?'fail':(i.result==='pass'?'pass':'')}">${i.result.toUpperCase()}</span>`:'—'}</td></tr>`).join("")}</tbody></table>`;
+    host.innerHTML = `
+      <div class="modal-bg" id="modalBg">
+        <div class="modal">
+          <button class="close" id="modalClose">&times;</button>
+          <h2 style="margin-top:0;">${CAMPUS_META[r.campus].label} — ${r.ahuTag}</h2>
+          <p style="font-size:12px;color:var(--ink-soft);">${fmtDate(r.date)} &middot; ${(r.types||[]).map(t=>TYPE_LABEL[t]).join(", ")} &middot; ${r.source==='scan'?'Scanned backlog record':'Digital inspection'}</p>
+          <p style="font-size:13px;"><b>Technician:</b> ${r.technician||"—"} ${r.signature?`&middot; Signed: ${r.signature}`:""}</p>
+          ${r.scanFileData ? (r.scanFileData.startsWith("data:image") ? `<img src="${r.scanFileData}" style="max-width:100%;border-radius:8px;border:1px solid var(--line);">` : `<a href="${r.scanFileData}" download="${r.scanFileName||'scan.pdf'}" class="btn small">Download scanned file</a>`) : ""}
+          ${checklistBlock("Annual Scope", r.annualChecklist)}
+          ${checklistBlock("Quarterly &amp; Semi-Annual Scope", r.qsChecklist)}
+          ${r.service ? `<div class="section-title">Servicing</div><p style="font-size:13px;">Filter: ${fmtDate(r.service.filterDate)} &middot; Coil: ${fmtDate(r.service.coilDate)} &middot; Belt: ${fmtDate(r.service.beltDate)}${r.service.uvDate?` &middot; UV: ${fmtDate(r.service.uvDate)}`:""}</p>`:""}
+          ${r.pressure ? `<div class="section-title">Filter Pressure Drop</div><table><thead><tr><th></th><th>Entering</th><th>Leaving</th><th>Differential</th></tr></thead><tbody><tr><td>CW Coil</td><td>${r.pressure.cw.in||"—"}</td><td>${r.pressure.cw.out||"—"}</td><td>${r.pressure.cw.diff||"—"}</td></tr><tr><td>HW Coil</td><td>${r.pressure.hw.in||"—"}</td><td>${r.pressure.hw.out||"—"}</td><td>${r.pressure.hw.diff||"—"}</td></tr></tbody></table>`:""}
+          ${r.bearing ? `<div class="section-title">Bearing Temps</div><p style="font-size:13px;">Front: ${r.bearing.front||"—"}°F &middot; Rear: ${r.bearing.rear||"—"}°F</p>`:""}
+          ${r.engineerInitials ? `<p style="font-size:13px;"><b>Engineer on duty:</b> ${r.engineerInitials}</p>`:""}
+          ${r.notes ? `<div class="section-title">Deficiencies / Notes</div><p style="font-size:13px;">${r.notes}</p>`:""}
+          <div class="no-print" style="margin-top:16px;display:flex;gap:8px;">
+            <button class="btn small secondary" id="printBtn">Print / Save PDF</button>
+            ${ROLE==="admin" ? `<button class="btn small danger" id="delBtn">Delete record</button>`:""}
+          </div>
+        </div>
+      </div>`;
+    document.getElementById("modalClose").onclick = ()=>host.innerHTML="";
+    document.getElementById("modalBg").onclick = (e)=>{ if(e.target.id==="modalBg") host.innerHTML=""; };
+    document.getElementById("printBtn").onclick = ()=>window.print();
+    const del = document.getElementById("delBtn");
+    if(del) del.onclick = async ()=>{
+      if(confirm("Delete this record permanently?")){
+        await Store.remove(r.id);
+        RECORDS = await Store.list();
+        host.innerHTML="";
+        renderShell();
+        toast("Record deleted.");
+      }
+    };
+  }
+
+  // ---------------- Compliance Report ----------------
+  function renderCompliance(main){
+    // Build per campus / per AHU tag / per type: last date + next due
+    const byUnit = {};
+    RECORDS.forEach(r=>{
+      const key = r.campus+"|"+r.ahuTag;
+      byUnit[key] = byUnit[key] || {campus:r.campus, tag:r.ahuTag, last:{quarterly:null,semiannual:null,annual:null}};
+      (r.types||[]).forEach(t=>{
+        if(!byUnit[key].last[t] || r.date > byUnit[key].last[t]) byUnit[key].last[t] = r.date;
+      });
+    });
+    const today = new Date().toISOString().slice(0,10);
+    const rows = Object.values(byUnit).sort((a,b)=> (a.campus+a.tag).localeCompare(b.campus+b.tag));
+
+    let overdueCount=0, dueSoonCount=0, okCount=0;
+    const rowsHtml = rows.map(u=>{
+      const cells = ["quarterly","semiannual","annual"].map(type=>{
+        const last = u.last[type];
+        if(!last) { return `<td><span class="badge overdue">Never logged</span></td>`; }
+        const due = addMonths(last, DUE_MONTHS[type]);
+        const d = daysBetween(today, due);
+        let badge;
+        if(d < 0){ badge = `<span class="badge overdue">Overdue ${fmtDate(due)}</span>`; overdueCount++; }
+        else if(d <= 21){ badge = `<span class="badge due-soon">Due ${fmtDate(due)}</span>`; dueSoonCount++; }
+        else { badge = `<span class="badge ok">OK &middot; due ${fmtDate(due)}</span>`; okCount++; }
+        return `<td>${badge}<br><span style="font-size:11px;color:var(--ink-soft);">last: ${fmtDate(last)}</span></td>`;
+      });
+      return `<tr><td>${CAMPUS_META[u.campus].label}</td><td><b>${u.tag}</b></td>${cells.join("")}</tr>`;
+    }).join("");
+
+    main.innerHTML = `
+      <div class="card">
+        <h2>Compliance Status Report</h2>
+        <p class="hint">Next-due dates computed from the most recent logged inspection of each type (quarterly = 3 mo, semi-annual = 6 mo, annual = 12 mo). Use Print for an insurance/regulatory export.</p>
+        <div class="stat-grid">
+          <div class="stat"><div class="n" style="color:var(--red);">${overdueCount}</div><div class="l">Overdue</div></div>
+          <div class="stat"><div class="n" style="color:var(--amber);">${dueSoonCount}</div><div class="l">Due within 21 days</div></div>
+          <div class="stat"><div class="n" style="color:var(--green);">${okCount}</div><div class="l">On schedule</div></div>
+        </div>
+        <button class="btn secondary small no-print" id="printCompliance">Print / Export as PDF</button>
+        <div style="overflow-x:auto;margin-top:14px;">
+        <table>
+          <thead><tr><th>Campus</th><th>AHU Tag</th><th>Quarterly</th><th>Semi-Annual</th><th>Annual</th></tr></thead>
+          <tbody>${rows.length ? rowsHtml : `<tr><td colspan="5" style="color:var(--ink-soft);">No inspection records logged yet.</td></tr>`}</tbody>
+        </table>
+        </div>
+      </div>`;
+    document.getElementById("printCompliance").onclick = ()=>window.print();
+  }
+
+  // ---------------- Settings ----------------
+  function renderSettings(main){
+    main.innerHTML = `
+      <div class="card">
+        <h2>AHU Tags</h2>
+        <p class="hint">Tags used in the inspection form autocomplete. Add units that haven't been logged yet.</p>
+        <div class="row"><input type="text" id="newTag" placeholder="e.g. AHU-7"><button class="btn small" id="addTagBtn">Add tag</button></div>
+        <div style="margin-top:10px;font-size:13px;">${TAGS.length ? TAGS.map(t=>`<span class="badge digital" style="margin:2px;">${t}</span>`).join("") : "<span style='color:var(--ink-soft)'>No tags yet — tags are also added automatically the first time you use them.</span>"}</div>
+      </div>
+      <div class="card">
+        <h2>Backup &amp; Restore</h2>
+        <p class="hint">Demo mode keeps data in this browser only. Export regularly as a backup, or to move data to another device.</p>
+        <button class="btn secondary small" id="exportBtn">Export all records (JSON)</button>
+        <label style="margin-top:14px;">Restore from backup file</label>
+        <input type="file" id="restoreInput" accept="application/json">
+      </div>
+      <div class="card">
+        <h2>Cloud setup (recommended for real use)</h2>
+        <p class="hint">Right now this app stores records per-device in the browser — a tech's phone won't see what another tech entered, and auditors can't reach it remotely. To make this a real shared repository:</p>
+        <ol style="font-size:13px;padding-left:18px;">
+          <li>Create a free Firebase project (Firestore + Storage enabled).</li>
+          <li>Paste the Firebase config into <code>FIREBASE_CONFIG</code> near the top of this file and set <code>CLOUD_ENABLED = true</code>.</li>
+          <li>Re-deploy (e.g. drag-and-drop onto Netlify, same as the tool tracker app).</li>
+          <li>Share the URL with a Viewer PIN for Methodist staff and auditors, and the Admin PIN with techs.</li>
+        </ol>
+        <p style="font-size:12px;color:var(--ink-soft);">I can wire this up once you've created the Firebase project — send me the config and I'll do the rest.</p>
+      </div>
+      <div class="card">
+        <h2>Access PINs</h2>
+        <p class="hint">Currently hardcoded in the file (<code>PINS</code> near the top): Admin <b>${PINS.admin}</b>, Viewer <b>${PINS.viewer}</b>. Change these before real deployment and before sharing the viewer PIN outside your team.</p>
+      </div>
+    `;
+    document.getElementById("addTagBtn").onclick = async ()=>{
+      const t = document.getElementById("newTag").value.trim();
+      if(!t) return;
+      await Store.addTag(t);
+      TAGS = await Store.tags();
+      renderSettings(main);
+    };
+    document.getElementById("exportBtn").onclick = ()=>{
+      const blob = new Blob([JSON.stringify({records:RECORDS, tags:TAGS}, null, 2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "methodist-ahu-repository-backup-"+new Date().toISOString().slice(0,10)+".json";
+      a.click();
+    };
+    document.getElementById("restoreInput").onchange = (e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = async ()=>{
+        try{
+          const data = JSON.parse(reader.result);
+          if(data.records){ localStorage.setItem(LS_RECORDS, JSON.stringify(data.records)); }
+          if(data.tags){ localStorage.setItem(LS_TAGS, JSON.stringify(data.tags)); }
+          RECORDS = await Store.list();
+          TAGS = await Store.tags();
+          toast("Backup restored.");
+          renderShell();
+        } catch(err){ toast("Invalid backup file."); }
+      };
+      reader.readAsText(f);
+    };
+  }
+
+  // ---------------- Init ----------------
+  if(ROLE && (ROLE==="admin"||ROLE==="viewer")){
+    boot();
+  } else {
+    renderGate();
+  }
+
+  // Service worker registration (optional, ignored if sw.js absent)
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
+</script>
+</body>
+</html>

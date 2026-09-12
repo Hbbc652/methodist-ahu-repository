@@ -1,0 +1,9 @@
+{
+  "name": "Methodist AHU Inspection Repository",
+  "short_name": "Methodist AHU",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2f5f4",
+  "theme_color": "#005941",
+  "icons": []
+}
